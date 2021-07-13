@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "633750e70c684ca7b79c2584e7eac5995c030a9d6caf0480246d2a60db1653e1"
+            "sha256": "5e1858b85685fe89fb2db402fa7c526e04396e06c08dc918e955c522841ca64b"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -24,6 +24,14 @@
             "index": "pypi",
             "version": "==3.0.0"
         },
+        "aiofiles": {
+            "hashes": [
+                "sha256:a1c4fc9b2ff81568c83e21392a82f344ea9d23da906e4f6a52662764545e19d4",
+                "sha256:c67a6823b5f23fcab0a2595a289cec7d8c863ffcb4322fb8cd6b90400aedfdbc"
+            ],
+            "index": "pypi",
+            "version": "==0.7.0"
+        },
         "aiohttp": {
             "hashes": [
                 "sha256:173267050501e1537293df06723bc5e719990889e2820ba3932969983892e960",
@@ -38,6 +46,12 @@
             ],
             "index": "pypi",
             "version": "==4.0.0a1"
+        },
+        "args": {
+            "hashes": [
+                "sha256:a785b8d837625e9b61c39108532d95b85274acd679693b71ebb5156848fcf814"
+            ],
+            "version": "==0.1.0"
         },
         "async-timeout": {
             "hashes": [
@@ -137,6 +151,13 @@
             ],
             "markers": "python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3' and python_version < '4'",
             "version": "==0.7.2"
+        },
+        "clint": {
+            "hashes": [
+                "sha256:05224c32b1075563d0b16d0015faaf9da43aa214e4a2140e51f08789e7a4c5aa"
+            ],
+            "index": "pypi",
+            "version": "==0.5.1"
         },
         "fiona": {
             "hashes": [
@@ -366,6 +387,14 @@
             "index": "pypi",
             "version": "==2.25.1"
         },
+        "requests-toolbelt": {
+            "hashes": [
+                "sha256:380606e1d10dc85c3bd47bf5a6095f815ec007be7a8b69c878507068df059e6f",
+                "sha256:968089d4584ad4ad7c171454f0a5c6dac23971e9472521ea3b6d49d610aa6fc0"
+            ],
+            "index": "pypi",
+            "version": "==0.9.1"
+        },
         "shapely": {
             "hashes": [
                 "sha256:0fd0f2b3f8e84044cf587033d233f12fde5c826f17bb78430a393f5574f6840f",
@@ -388,6 +417,14 @@
             ],
             "markers": "python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3'",
             "version": "==1.16.0"
+        },
+        "tqdm": {
+            "hashes": [
+                "sha256:5aa445ea0ad8b16d82b15ab342de6b195a722d75fc1ef9934a46bba6feafbc64",
+                "sha256:8bb94db0d4468fea27d004a0f1d1c02da3cdedc00fe491c0de986b76a04d6b0a"
+            ],
+            "index": "pypi",
+            "version": "==4.61.2"
         },
         "typing-extensions": {
             "hashes": [
@@ -824,6 +861,7 @@
                 "sha256:380606e1d10dc85c3bd47bf5a6095f815ec007be7a8b69c878507068df059e6f",
                 "sha256:968089d4584ad4ad7c171454f0a5c6dac23971e9472521ea3b6d49d610aa6fc0"
             ],
+            "index": "pypi",
             "version": "==0.9.1"
         },
         "s3transfer": {

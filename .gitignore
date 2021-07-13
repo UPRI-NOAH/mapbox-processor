@@ -1,3 +1,6 @@
 data/
 secrets.sk
 .env
+.vscode
+estimates.txt
+curr.py
