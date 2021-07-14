@@ -25,8 +25,8 @@ def generate_recipe(tileset_id, geo_file):  # On top for visibility
         "layers": {
             f"{filename}": {
                 "source": tileset_id,
-                "minzoom": int(os.getenv("MIN_ZOOM", 0)),
-                "maxzoom": int(os.getenv("MAX_ZOOM", 5)),
+                "minzoom": int(os.getenv("MIN_ZOOM", 4)),
+                "maxzoom": int(os.getenv("MAX_ZOOM", 16)),
                 # Use simplification value of 1 for zoom >= 10. Use default 4 below that
                 "features": {"simplification": ["case", [">=", ["zoom"], 10], 1, 4]},
             }
@@ -98,10 +98,15 @@ def tileset_name_to_source(tileset_name):
     return " ".join(tileset_name.split("_")).title()
 
 
-def create_tileset_source(geo_file):
+def create_tileset_source(geo_file, replace=False):
     """
     Creates the tilesource in mapbox. Basically, uploads the geojson into MapBox's
     server for processing.
+
+    Args:
+        geo_file (str): Full path of the geojson being uploaded
+        replace (bool): Defaults to False. Setting to True will enable the script to
+                        replace the source file.
     """
     source_name = determine_source_name(os.path.basename(geo_file))
     url = f"https://api.mapbox.com/tilesets/v1/sources/{os.getenv('USER')}/{source_name}?access_token={os.getenv('MAPBOX_ACCESS_TOKEN')}"  # noqa: E501
@@ -117,8 +122,12 @@ def create_tileset_source(geo_file):
         callback = create_callback(multipart_encoded_file)
         monitor = MultipartEncoderMonitor(multipart_encoded_file, callback)
 
+        method = "POST"
+        if replace:
+            method = "PUT"
+
         response = requests.request(
-            "POST",
+            method,
             url,
             data=monitor,
             headers={
@@ -126,7 +135,7 @@ def create_tileset_source(geo_file):
                 "Content-type": monitor.content_type,
             },
         )
-        logging.info(js_resp := response.json()["message"])
+        logging.info(js_resp := response.json())
     if response.status_code == 200:
         tileset_id = js_resp.get("id")
         recipe_path = generate_recipe(tileset_id, geo_file)
@@ -139,12 +148,15 @@ def get_layer_name(recipe):
         return list(recipe_json["layers"].keys())[0]
 
 
-def create_tileset(recipe):
+def create_tileset(recipe, publish=True):
     """
     Function to create an empty tileset using a recipe. Need to publish
     tileset for it to be usable.
     Args:
         recipe (str): Full path of the recipe file.
+        publish (bool): Specify if you want to publish directly after creating the
+                        tileset. Defaults to True so that we are able to do bulk
+                        operations explicitly.
     """
     layer_name = get_layer_name(recipe)  # Mapbox layer name
     tileset_name = layer_name + "_tiles"  # Mapbox tileset identifier
@@ -156,9 +168,13 @@ def create_tileset(recipe):
     payload["private"] = False
     with open(recipe) as json_recipe:
         payload["recipe"] = json.load(json_recipe)
-    logging.info(url)
+
     response = requests.request("POST", url=url, json=payload)
     logging.info(response.text)
+
+    # Run publish
+    if publish:
+        publish_tileset(recipe)
 
 
 def update_tileset_recipe(recipe):
@@ -172,9 +188,9 @@ def update_tileset_recipe(recipe):
     logging.info(response)
 
 
-def publish_tileset(geo_file):
+def publish_tileset(recipe):
     """Function to process and publish created tileset."""
-    tileset_name = generate_tileset_name(geo_file) + "_tiles"
+    tileset_name = get_layer_name(recipe) + "_tiles"
     url = f"https://api.mapbox.com/tilesets/v1/{os.getenv('USER')}.{tileset_name}/publish?access_token={os.getenv('MAPBOX_ACCESS_TOKEN')}"  # noqa: E501
     response = requests.request("POST", url=url)
     logging.info(response.text)
@@ -190,25 +206,25 @@ def bulk_create_tileset_source(folder):
     concurrent_runner(create_tileset_source, files)
 
 
-def bulk_create_tilesets_from_recipes(geo_folder, recipe_folder):
+def bulk_create_tilesets_from_recipes(recipe_folder):
     """
-    Bulk create tilesets from existing geojson and
+    Bulk create tilesets from existing geojson and publishes the created tilesets.
     """
     recipes = get_files_full_path(recipe_folder)
     concurrent_runner(create_tileset, recipes)
 
 
+def single_upload_pipeline(geo_file, replace=False):
+    # Upload source file
+    recipe_path = create_tileset_source(geo_file, replace=replace)
+
+    # Create tileset from recipe and
+    create_tileset(recipe_path)
+
+
 if __name__ == "__main__":
     t0 = time.time()
-    folder = "/home/cloud/projects/noah/noah-gis/data/geojson"
-    # bulk_create_tileset_source(folder)
-    file = "data/populated_places.geojson.ld"
-    recipe = "recipes/aklan_flood_100year.json"
-    # update_tileset_recipe(recipe)
-    # update_tileset_recipe(file, recipe)
-    # publish_tileset(file)
-    # generate_recipe(tileset_id="aklan_flood", geo_file="Aklan_Flood_100year.js")
-    create_tileset(recipe)
-    publish_tileset(geo_file="data/geojson/Aklan_Flood_100year.geojson")
+    file = "data/geojson/Antique_Flood_100year.geojson"
+    single_upload_pipeline(file)
     t1 = time.time()
-    print(f"Elapsed time: {t1-t0:.2f}s")
+    logging.info(f"Elapsed time: {t1-t0:.2f}s")

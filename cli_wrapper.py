@@ -117,6 +117,6 @@ if __name__ == "__main__":
     t0 = time.time()
     folder = "/home/cloud/projects/noah/noah-gis/data/geojson"
 
-    main_estimater(folder, precision="1m")
+    main_estimater(folder, precision="30cm")
     t1 = time.time()
     print(f"Elapsed time async: {t1-t0:.2f}s")

@@ -1,0 +1,24 @@
+{
+    "version": 1,
+    "layers": {
+        "aklan_flood_100year_zl10": {
+            "source": "mapbox://tileset-source/cloud5/aklan_flood",
+            "minzoom": 1,
+            "maxzoom": 10,
+            "features": {
+                "simplification": [
+                    "case",
+                    [
+                        ">=",
+                        [
+                            "zoom"
+                        ],
+                        5
+                    ],
+                    1,
+                    4
+                ]
+            }
+        }
+    }
+}

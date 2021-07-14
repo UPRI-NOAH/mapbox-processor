@@ -5,20 +5,16 @@ name = "pypi"
 
 [packages]
 requests = "*"
-gdal = "==2.4.2"
-geopandas = "*"
-aiohttp = "*"
-aiodns = "*"
 python-dotenv = "*"
 aiofiles = "*"
 requests-toolbelt = "*"
-tqdm = "*"
 clint = "*"
 
 [dev-packages]
 black = "*"
 mapbox-tilesets = "*"
 pre-commit = "*"
+geopandas = "*"
 
 [requires]
 python_version = "3.9"
