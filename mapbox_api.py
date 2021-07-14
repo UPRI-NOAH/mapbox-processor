@@ -28,7 +28,7 @@ def generate_recipe(tileset_id, geo_file):  # On top for visibility
                 "minzoom": int(os.getenv("MIN_ZOOM", 4)),
                 "maxzoom": int(os.getenv("MAX_ZOOM", 16)),
                 # Use simplification value of 1 for zoom >= 10. Use default 4 below that
-                "features": {"simplification": ["case", [">=", ["zoom"], 10], 1, 4]},
+                "features": {"simplification": ["case", [">=", ["zoom"], 8], 1, 4]},
             }
         },
     }
@@ -58,16 +58,10 @@ def get_files_full_path(folder):
     return file_paths
 
 
-def determine_source_name(file):
-    """
-    This function returns the specific source name to be used for
-    a specific geojson file to be uploaded.
-
-    Convention: <prov>_<hazard>
-    File-naming assumption: <Province>_<Hazard>_Type.geojson.
-        i.e. Aklan_Flood_100year.geojson
-    """
-    return "_".join(file.split("_")[:2]).lower()
+def generate_tileset_name(file):
+    """Returns input filename without extension, all lowercase."""
+    file = os.path.basename(file)
+    return "_".join(file.split(".")[:-1]).lower()
 
 
 def concurrent_runner(func, iterable, num_workers=5):
@@ -88,12 +82,6 @@ def concurrent_runner(func, iterable, num_workers=5):
                 logging.info(f"Successful operation for {os.path.basename(file)}.")
 
 
-def generate_tileset_name(file):
-    """Returns input filename without extension, all lowercase."""
-    file = os.path.basename(file)
-    return "_".join(file.split(".")[:-1]).lower()
-
-
 def tileset_name_to_source(tileset_name):
     return " ".join(tileset_name.split("_")).title()
 
@@ -108,7 +96,7 @@ def create_tileset_source(geo_file, replace=False):
         replace (bool): Defaults to False. Setting to True will enable the script to
                         replace the source file.
     """
-    source_name = determine_source_name(os.path.basename(geo_file))
+    source_name = generate_tileset_name(os.path.basename(geo_file))
     url = f"https://api.mapbox.com/tilesets/v1/sources/{os.getenv('USER')}/{source_name}?access_token={os.getenv('MAPBOX_ACCESS_TOKEN')}"  # noqa: E501
     features = normalize(geo_file)
     with tempfile.TemporaryFile() as file:
