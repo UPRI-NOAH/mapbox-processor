@@ -2,8 +2,8 @@
     "version": 1,
     "layers": {
         "aklan_flood_100year_zl10": {
-            "source": "mapbox://tileset-source/cloud5/aklan_flood",
-            "minzoom": 1,
+            "source": "mapbox://tileset-source/cloud5/aklan_flood_100year_zl10",
+            "minzoom": 4,
             "maxzoom": 10,
             "features": {
                 "simplification": [
@@ -13,7 +13,7 @@
                         [
                             "zoom"
                         ],
-                        5
+                        8
                     ],
                     1,
                     4

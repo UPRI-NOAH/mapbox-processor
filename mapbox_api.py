@@ -25,10 +25,10 @@ def generate_recipe(tileset_id, geo_file):  # On top for visibility
         "layers": {
             f"{filename}": {
                 "source": tileset_id,
-                "minzoom": int(os.getenv("MIN_ZOOM", 4)),
-                "maxzoom": int(os.getenv("MAX_ZOOM", 16)),
+                "minzoom": 4,  # int(os.getenv("MIN_ZOOM", 4)),
+                "maxzoom": 16,  # int(os.getenv("MAX_ZOOM", 16)),
                 # Use simplification value of 1 for zoom >= 10. Use default 4 below that
-                "features": {"simplification": ["case", [">=", ["zoom"], 8], 1, 4]},
+                "features": {"simplification": ["case", [">=", ["zoom"], 7], 1, 4]},
             }
         },
     }
@@ -147,7 +147,7 @@ def create_tileset(recipe, publish=True):
                         operations explicitly.
     """
     layer_name = get_layer_name(recipe)  # Mapbox layer name
-    tileset_name = layer_name + "_tiles"  # Mapbox tileset identifier
+    tileset_name = layer_name + "_tls"  # Mapbox tileset identifier
     mapbox_name = tileset_name_to_source(layer_name)  # Mapbox verbose name
     url = f"https://api.mapbox.com/tilesets/v1/{os.getenv('USER')}.{tileset_name}?access_token={os.getenv('MAPBOX_ACCESS_TOKEN')}"  # noqa: E501
     payload = {}
@@ -167,7 +167,7 @@ def create_tileset(recipe, publish=True):
 
 def update_tileset_recipe(recipe):
     """Function to update the recipe of a tileset. Call publish after updating recipe"""
-    tileset_name = get_layer_name(recipe) + "_tiles"
+    tileset_name = get_layer_name(recipe) + "_tls"
     url = f"https://api.mapbox.com/tilesets/v1/{os.getenv('USER')}.{tileset_name}/recipe?access_token={os.getenv('MAPBOX_ACCESS_TOKEN')}"  # noqa: E501
 
     with open(recipe) as json_recipe:
@@ -178,7 +178,7 @@ def update_tileset_recipe(recipe):
 
 def publish_tileset(recipe):
     """Function to process and publish created tileset."""
-    tileset_name = get_layer_name(recipe) + "_tiles"
+    tileset_name = get_layer_name(recipe) + "_tls"
     url = f"https://api.mapbox.com/tilesets/v1/{os.getenv('USER')}.{tileset_name}/publish?access_token={os.getenv('MAPBOX_ACCESS_TOKEN')}"  # noqa: E501
     response = requests.request("POST", url=url)
     logging.info(response.text)
@@ -202,7 +202,7 @@ def bulk_create_tilesets_from_recipes(recipe_folder):
     concurrent_runner(create_tileset, recipes)
 
 
-def single_upload_pipeline(geo_file, replace=False):
+def single_upload_pipeline(geo_file, replace=True):
     # Upload source file
     recipe_path = create_tileset_source(geo_file, replace=replace)
 
@@ -212,7 +212,7 @@ def single_upload_pipeline(geo_file, replace=False):
 
 if __name__ == "__main__":
     t0 = time.time()
-    file = "data/geojson/Antique_Flood_100year.geojson"
-    single_upload_pipeline(file)
+    file = "data/geojson/MetroManila_Flood_25year.geojson"
+    single_upload_pipeline(file, replace=True)
     t1 = time.time()
     logging.info(f"Elapsed time: {t1-t0:.2f}s")
