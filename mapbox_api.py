@@ -136,7 +136,7 @@ def get_layer_name(recipe):
         return list(recipe_json["layers"].keys())[0]
 
 
-def create_tileset(recipe, publish=True):
+def create_tileset(recipe, publish=False):
     """
     Function to create an empty tileset using a recipe. Need to publish
     tileset for it to be usable.
@@ -159,6 +159,11 @@ def create_tileset(recipe, publish=True):
 
     response = requests.request("POST", url=url, json=payload)
     logging.info(response.text)
+    if response.status_code != 200:
+        logging.info(f"retrying {tileset_name}")
+        time.sleep(30)
+        response = requests.request("POST", url=url, json=payload)
+        logging.info(f"retried {tileset_name}: {response.status_code}:{response.text}")
 
     # Run publish
     if publish:
@@ -181,7 +186,12 @@ def publish_tileset(recipe):
     tileset_name = get_layer_name(recipe) + "_tls"
     url = f"https://api.mapbox.com/tilesets/v1/{os.getenv('USER')}.{tileset_name}/publish?access_token={os.getenv('MAPBOX_ACCESS_TOKEN')}"  # noqa: E501
     response = requests.request("POST", url=url)
-    logging.info(response.text)
+    logging.info(f"{response.status_code}:{response.text}")
+    if response.status_code != 200:
+        logging.info(f"retrying {tileset_name}")
+        time.sleep(30)
+        response = requests.request("POST", url=url)
+        logging.info(f"retried {tileset_name}: {response.status_code}:{response.text}")
 
 
 def bulk_create_tileset_source(folder):
@@ -202,6 +212,13 @@ def bulk_create_tilesets_from_recipes(recipe_folder):
     concurrent_runner(create_tileset, recipes)
 
 
+def bulk_publish_tilesets_from_recipes(recipe_folder):
+    recipes = get_files_full_path(recipe_folder)
+    for recipe in recipes:
+        publish_tileset(recipe)
+        time.sleep(30)
+
+
 def single_upload_pipeline(geo_file, replace=True):
     # Upload source file
     recipe_path = create_tileset_source(geo_file, replace=replace)
@@ -210,9 +227,18 @@ def single_upload_pipeline(geo_file, replace=True):
     create_tileset(recipe_path)
 
 
+def bulk_upload_pipeline(geojson_folder, recipe_folder):
+    bulk_create_tileset_source(folder=geojson_folder)
+    bulk_create_tilesets_from_recipes(recipe_folder=recipe_folder)
+    bulk_publish_tilesets_from_recipes(recipe_folder=recipe_folder)
+
+
 if __name__ == "__main__":
     t0 = time.time()
-    file = "data/geojson/MetroManila_Flood_25year.geojson"
-    single_upload_pipeline(file, replace=True)
+    # file = "data/geojson/PH012800000_FH_100yr.geojson"
+    # single_upload_pipeline(file, replace=True)
+    geojson_folder = "data/geojson/"
+    recipe_folder = "recipes/"
+    bulk_upload_pipeline(geojson_folder, recipe_folder)
     t1 = time.time()
     logging.info(f"Elapsed time: {t1-t0:.2f}s")
