@@ -26,7 +26,7 @@ def generate_recipe(tileset_id, geo_file):  # On top for visibility
             f"{filename}": {
                 "source": tileset_id,
                 "minzoom": 4,  # int(os.getenv("MIN_ZOOM", 4)),
-                "maxzoom": 16,  # int(os.getenv("MAX_ZOOM", 16)),
+                "maxzoom": 13,  # int(os.getenv("MAX_ZOOM", 13)),
                 # Use simplification value of 1 for zoom >= 10. Use default 4 below that
                 "features": {"simplification": ["case", [">=", ["zoom"], 7], 1, 4]},
             }
@@ -124,6 +124,7 @@ def create_tileset_source(geo_file, replace=False):
             },
         )
         logging.info(js_resp := response.json())
+
     if response.status_code == 200:
         tileset_id = js_resp.get("id")
         recipe_path = generate_recipe(tileset_id, geo_file)
@@ -136,7 +137,7 @@ def get_layer_name(recipe):
         return list(recipe_json["layers"].keys())[0]
 
 
-def create_tileset(recipe, publish=False):
+def create_tileset(recipe, publish=True):
     """
     Function to create an empty tileset using a recipe. Need to publish
     tileset for it to be usable.
@@ -235,10 +236,10 @@ def bulk_upload_pipeline(geojson_folder, recipe_folder):
 
 if __name__ == "__main__":
     t0 = time.time()
-    # file = "data/geojson/PH012800000_FH_100yr.geojson"
-    # single_upload_pipeline(file, replace=True)
-    geojson_folder = "data/geojson/"
-    recipe_folder = "recipes/"
-    bulk_upload_pipeline(geojson_folder, recipe_folder)
+    file = "/home/dev-hpc/noahv2/noah-api/sensors.geojson"
+    single_upload_pipeline(file, replace=True)
+    # geojson_folder = "data/geojson/"
+    # recipe_folder = "recipes/"
+    # bulk_upload_pipeline(geojson_folder, recipe_folder)
     t1 = time.time()
     logging.info(f"Elapsed time: {t1-t0:.2f}s")
