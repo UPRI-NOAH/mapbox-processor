@@ -13,14 +13,14 @@ load_dotenv()
 logging.basicConfig(format="%(asctime)s - %(message)s", level=logging.INFO)
 RECIPES_FOLDER = os.path.join(os.path.dirname(os.path.abspath(__file__)), "recipes")
 GEOJSON_FOLDER = os.path.join(
-    os.path.dirname(os.path.abspath(__file__)), "data/geojson"
+    os.path.dirname(os.path.abspath(__file__)), "data/geojson/multilayer"
 )
 
 
 def generate_multilayer_recipe(multilayer_folder):  # On top for visibility
     """Function to generate recipe with multiple layer"""
     geo_folder = GEOJSON_FOLDER + multilayer_folder
-    recipe_name = geo_folder.split("geojson/")[-1].rsplit("/", 1)[0]
+    recipe_name = geo_folder.split("multilayer/")[-1].rsplit("/", 1)[0]
     ext = ".geojson"
     geojson_file_list = [
         i for i in os.listdir(geo_folder) if os.path.splitext(i)[1] == ext
@@ -75,7 +75,19 @@ def create_multilayer_tileset(recipe, recipe_url, publish=True):
                         operations explicitly.
     """
     tileset_name = recipe + "_tls"  # Mapbox tileset identifier
-    mapbox_name = recipe  # Mapbox verbose name
+    mapbox_name = recipe.replace("_", " ")  # Mapbox verbose name
+    haz_lvl = mapbox_name.split()[-1]
+
+    if "ph" in mapbox_name:
+        if "fh" in mapbox_name:
+            mapbox_name = f"PH Flood Hazard {haz_lvl}"
+        elif "lh" in mapbox_name:
+            mapbox_name = f"PH Landslide Hazard {haz_lvl.upper()}"
+        else:
+            mapbox_name = f"PH Storm Surge Hazard {haz_lvl.upper()}"
+    else:
+        mapbox_name = recipe
+
     url = f"https://api.mapbox.com/tilesets/v1/{os.getenv('USER')}.{tileset_name}?access_token={os.getenv('MAPBOX_ACCESS_TOKEN')}"  # noqa: E501
     payload = {}
     payload["name"] = mapbox_name
@@ -107,7 +119,7 @@ def bulk_upload_pipeline(multilayer_folder):
 
 if __name__ == "__main__":
     t0 = time.time()
-    multilayer_folder = "/ph_lh_lh2/"  # folder name contains multiple geojson
+    multilayer_folder = "/PH133900000/"  # folder name contains multiple geojson
     bulk_upload_pipeline(multilayer_folder)
 
     t1 = time.time()
