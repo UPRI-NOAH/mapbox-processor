@@ -23,6 +23,9 @@ RECIPES_FOLDER = os.path.join(os.path.dirname(os.path.abspath(__file__)), "recip
 GEOJSON_FOLDER = os.path.join(
     os.path.dirname(os.path.abspath(__file__)), "data/geojson"
 )
+region = "ph" # Name of Area, PH if tileset is nationwide
+hazard_type = "fh" # Hazard Type
+hazard_level = "100yr" # Hazard Level
 
 
 def generate_container_recipe(tileset_id, source_name):  # On top for visibility
@@ -32,10 +35,10 @@ def generate_container_recipe(tileset_id, source_name):  # On top for visibility
         "layers": {
             f"{source_name}": {
                 "source": tileset_id,
-                "minzoom": 4,
+                "minzoom": 7,
                 "maxzoom": 13,
                 # Use simplification value of 1 for zoom >= 10. Use default 4 below that
-                "features": {"simplification": ["case", [">=", ["zoom"], 7], 1, 4]},
+                # "features": {"simplification": ["case", [">=", ["zoom"], 13], 1, 13]},
             }
         },
     }
@@ -57,7 +60,10 @@ def create_multilayer_tls_src(geo_file, replace=False):
         replace (bool): Defaults to False. Setting to True will enable the script to
                         replace the source file.
     """
-    source_name = os.path.dirname(geo_file).split("/")[-1]
+    # reg = os.path.dirname(geo_file).split("/")[-3]
+    # haztype = os.path.dirname(geo_file).split("/")[-2]
+    # hazlevel = os.path.dirname(geo_file).split("/")[-1]
+    source_name = f"{region}_{hazard_type}_{hazard_level}"
     url = f"https://api.mapbox.com/tilesets/v1/sources/{os.getenv('USER')}/{source_name}?access_token={os.getenv('MAPBOX_ACCESS_TOKEN')}"  # noqa: E501
     features = normalize(geo_file)
     with tempfile.TemporaryFile() as file:
@@ -84,12 +90,7 @@ def create_multilayer_tls_src(geo_file, replace=False):
                 "Content-type": monitor.content_type,
             },
         )
-        logging.info(js_resp := response.json())
-
-        if response.status_code == 200:
-            tileset_id = js_resp.get("id")
-            recipe_path = generate_container_recipe(tileset_id, source_name)
-            return recipe_path
+        logging.info(response.json())
 
 
 def bulk_multilayer_tls_src(folder):
@@ -98,18 +99,41 @@ def bulk_multilayer_tls_src(folder):
     concurrent_runner(create_multilayer_tls_src, files)
 
 
-def single_container_pipeline(container_name):
+def single_container_pipeline(region, hazard_type, hazard_level):
     """Pipeline for running multiple tileset in one source"""
-    geojson_folder = f"{GEOJSON_FOLDER}/{container_name}/"
-    recipe_path = f"{RECIPES_FOLDER}/{container_name}.json"
-    bulk_multilayer_tls_src(geojson_folder)
-    create_tileset(recipe_path)
+    geojson_folder = f"{GEOJSON_FOLDER}/{region}/{hazard_type}/{hazard_level}/"
+    print(geojson_folder)
+    if os.path.isdir(geojson_folder):
+        print(os.path.isdir(geojson_folder))
+        bulk_multilayer_tls_src(geojson_folder)
+    else:
+        pass
 
 
 if __name__ == "__main__":
     t0 = time.time()
-    container_name = "regionviii_fh_25yr"
-    single_container_pipeline(container_name)
+    sleep_counter = 0
+    # Bulk Run
+    # for x in range(1, 18):
+    #     if x < 10:
+    #         ph = region.replace("PH00", f"PH0{x}")
+    #         print(ph)
+    #         single_container_pipeline(ph, hazard_type, hazard_level)
+    #         sleep_counter += 1
+    #         if sleep_counter % 5:
+    #             time.sleep(0.005)
+
+    #     else:
+    #         ph = region.replace("PH00", f"PH{x}")
+    #         print(ph)
+    #         single_container_pipeline(ph, hazard_type, hazard_level)
+    #         sleep_counter += 1
+
+    #         if sleep_counter % 5:
+    #             time.sleep(0.005)
+
+    #Single Run
+    single_container_pipeline(region, hazard_type, hazard_level)
 
     t1 = time.time()
     logging.info(f"Elapsed time: {t1-t0:.2f}s")

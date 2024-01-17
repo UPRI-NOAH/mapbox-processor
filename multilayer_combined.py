@@ -10,30 +10,23 @@ RECIPES_FOLDER = os.path.join(os.path.dirname(os.path.abspath(__file__)), "recip
 def generate_combined_recipe():
     """Function generate multilayer recipe."""
 
-    with open("data/source.json") as f:  # array of tileset source
+    with open("data/lh2.json") as f:  # array of tileset source
         js = json.load(f)
 
     hazard_types = [
-        "FH_100yr",
-        "FH_25yr",
-        "FH_5yr",
-        "LH_lh1",
-        "SSH_ssa1",
-        "SSH_ssa2",
-        "SSH_ssa3",
-        "SSH_ssa4",
+        "lh"
     ]  # noqa: E501
     for hazard in hazard_types:
         layers = {}
         for source in js:
             layer_config = {
-                "minzoom": 4,
-                "maxzoom": 13,
-                "features": {"simplification": ["case", [">=", ["zoom"], 7], 1, 4]},
+                "minzoom": 5,
+                "maxzoom": 10,
+                "features": {"simplification": ["case", [">=", ["zoom"], 10], 0, 20]},
             }
 
             if hazard in (source_url := source["url"]):
-                print(source_url)
+                # print(source_url)
                 layer_config["source"] = source_url
                 layer_key = source["url"].split("/")[-1]
                 layers[layer_key] = layer_config

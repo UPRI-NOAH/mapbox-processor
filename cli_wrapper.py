@@ -12,6 +12,9 @@ load_dotenv()
 FPATH = os.path.dirname(os.path.abspath(__file__))
 logging.basicConfig(format="%(asctime)s - %(message)s", level=logging.DEBUG)
 
+region = "PH000000000"
+hazard_type = "SSH"
+hazard_level = "ssa4"
 
 def call_tilesets_cli(parameters):
     retcode = subprocess.call(
@@ -48,7 +51,7 @@ async def write_to_file(cmd, file, precision):
     if res is None:
         return None
     result_js = json.loads(res)
-    async with aiofiles.open("estimates.txt", "a") as f:
+    async with aiofiles.open("1m_estimates.txt", "a") as f:
         await f.write(f"{file}\t{result_js.get('km2')}\t{result_js.get('precision')}\n")
     logging.info("Wrote results.")
 
@@ -115,8 +118,30 @@ def main_upload_source(folder):
 
 if __name__ == "__main__":
     t0 = time.time()
-    folder = "/home/cloud/projects/noah/noah-gis/data/geojson"
+    folder = "/path_to/mapbox-processor/data/geojson/hazfolder"
+    main_estimater(folder, precision="1m")
 
-    main_estimater(folder, precision="30cm")
+    # FOR BULK RUN
+    # for x in range(1, 19):
+    #     if x < 10:
+    #         ph = region.replace("PH000000000", f"PH0{x}0000000")
+    #         print(ph)
+    #         folder = f"data/geojson/multisource/{ph}/{hazard_type}/{hazard_level}"
+    #         if os.path.exists(folder):
+    #             print("True")
+    #             main_estimater(folder, precision="1m")
+    #         else:
+    #             continue
+
+    #     else:
+    #         ph = region.replace("PH00", f"PH{x}")
+    #         print(ph)
+    #         folder = f"data/geojson/multisource/{ph}/{hazard_type}/{hazard_level}"
+    #         if os.path.exists(folder):
+    #             print("True")
+    #             main_estimater(folder, precision="1m")
+    #         else:
+    #             continue
+ 
     t1 = time.time()
     print(f"Elapsed time async: {t1-t0:.2f}s")

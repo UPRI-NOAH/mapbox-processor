@@ -1,7 +1,7 @@
 import logging
 import multiprocessing
 import os
-
+import json
 import geopandas as gpd
 
 fpath = os.path.dirname(os.path.abspath(__file__))
@@ -24,20 +24,83 @@ def generate_file_paths(shp_folder, geo_folder):
 def shp_to_geojson(input_shp, output_file):
     logging.info(f"Processing {input_shp}.")
     shp = gpd.read_file(input_shp)
-    print(shp.columns)
+    shp2wgs = shp.to_crs(epsg=4326)
+    print(shp2wgs.columns)
     # Add here the function to check if file has correct var column
-    shp.to_file(output_file, driver="GeoJSON")
+    shp2wgs.to_file(output_file, driver="GeoJSON")
     logging.info(f"Converted to {output_file}")
 
 
-def convert_folder_contents(paths, num_cores=os.cpu_count()):
+def convert_folder_contents(paths, num_cores=5):
     with multiprocessing.Pool(num_cores) as pool:
         pool.starmap(shp_to_geojson, paths)
 
 
 if __name__ == "__main__":
-    shp_folder = "data/shp/"
-    geo_folder = "data/geojson/"
-    # shp_files = [p for p in os.listdir(shp_folder) if p.endswith(".shp")]
-    paths = generate_file_paths(shp_folder, geo_folder)
-    convert_folder_contents(paths)
+    #Bulk Conversion
+    # shp_folder = "path to shapefile folder"
+    # geo_folder = "path to geojson folder"
+    # paths = generate_file_paths(shp_folder, geo_folder)
+    # convert_folder_contents(paths)
+    shp_file = "/home/noahdev-hpc/Documents/git/random_processor/output/merged_df.shp"
+    geojson_file = "/home/noahdev-hpc/Documents/git/mapbox-processor/data/geojson/LH/LH22024/PH_LH_DF.geojson"
+    shp_to_geojson(shp_file, geojson_file)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

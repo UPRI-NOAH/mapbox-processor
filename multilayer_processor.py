@@ -13,14 +13,14 @@ load_dotenv()
 logging.basicConfig(format="%(asctime)s - %(message)s", level=logging.INFO)
 RECIPES_FOLDER = os.path.join(os.path.dirname(os.path.abspath(__file__)), "recipes")
 GEOJSON_FOLDER = os.path.join(
-    os.path.dirname(os.path.abspath(__file__)), "data/geojson/multilayer"
+    os.path.dirname(os.path.abspath(__file__)), "data/geojson"
 )
 
 
 def generate_multilayer_recipe(multilayer_folder):  # On top for visibility
     """Function to generate recipe with multiple layer"""
     geo_folder = GEOJSON_FOLDER + multilayer_folder
-    recipe_name = geo_folder.split("multilayer/")[-1].rsplit("/", 1)[0]
+    recipe_name = "ph_fh_100yr"
     ext = ".geojson"
     geojson_file_list = [
         i for i in os.listdir(geo_folder) if os.path.splitext(i)[1] == ext
@@ -74,20 +74,24 @@ def create_multilayer_tileset(recipe, recipe_url, publish=True):
                         tileset. Defaults to True so that we are able to do bulk
                         operations explicitly.
     """
-    tileset_name = recipe + "_tls"  # Mapbox tileset identifier
+    tileset_name = f"{recipe}_tls"  # Mapbox tileset identifier
     mapbox_name = recipe.replace("_", " ")  # Mapbox verbose name
     haz_lvl = mapbox_name.split()[-1]
 
     if "ph" in mapbox_name:
         if "fh" in mapbox_name:
-            mapbox_name = f"PH Flood Hazard {haz_lvl}"
+            mapbox_name = f"PH Flood Population {haz_lvl}"
         elif "lh" in mapbox_name:
-            mapbox_name = f"PH Landslide Hazard {haz_lvl.upper()}"
-        else:
+            mapbox_name = f"PH Landslide Hazard LH2"
+        elif "ssh" in mapbox_name:
             mapbox_name = f"PH Storm Surge Hazard {haz_lvl.upper()}"
+        elif "pop" in mapbox_name:
+            mapbox_name = f"PH POP {haz_lvl.upper()}"
+        else:
+            mapbox_name = f"PH Buildings {haz_lvl.upper()}"
     else:
         mapbox_name = recipe
-
+    
     url = f"https://api.mapbox.com/tilesets/v1/{os.getenv('USER')}.{tileset_name}?access_token={os.getenv('MAPBOX_ACCESS_TOKEN')}"  # noqa: E501
     payload = {}
     payload["name"] = mapbox_name
@@ -111,15 +115,16 @@ def create_multilayer_tileset(recipe, recipe_url, publish=True):
 
 def bulk_upload_pipeline(multilayer_folder):
     """Pipeline for running multi layer process"""
-    geo_folder = GEOJSON_FOLDER + multilayer_folder
-    bulk_create_tileset_source(geo_folder)
+    # geo_folder = GEOJSON_FOLDER + multilayer_folder
+    # print(geo_folder)
+    # bulk_create_tileset_source(geo_folder)
     recipe, recipe_url = generate_multilayer_recipe(multilayer_folder)
     create_multilayer_tileset(recipe, recipe_url)
 
 
 if __name__ == "__main__":
     t0 = time.time()
-    multilayer_folder = "/PH133900000/"  # folder name contains multiple geojson
+    multilayer_folder = "/FH/"  # folder name contains multiple geojson
     bulk_upload_pipeline(multilayer_folder)
 
     t1 = time.time()

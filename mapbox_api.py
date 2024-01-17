@@ -222,9 +222,10 @@ def bulk_publish_tilesets_from_recipes(recipe_folder):
 
 def single_upload_pipeline(geo_file, replace=True):
     # Upload source file
-    recipe_path = create_tileset_source(geo_file, replace=replace)
+    create_tileset_source(geo_file, replace=replace)
 
     # Create tileset from recipe and
+    recipe_path = "recipes/newbataan_fh_100yr.json"
     create_tileset(recipe_path)
 
 
@@ -236,7 +237,7 @@ def bulk_upload_pipeline(geojson_folder, recipe_folder):
 
 if __name__ == "__main__":
     t0 = time.time()
-    file = "/home/dev-hpc/noahv2/noah-api/sensors.geojson"
+    file = "pathtofile.geojson"
     single_upload_pipeline(file, replace=True)
     # geojson_folder = "data/geojson/"
     # recipe_folder = "recipes/"
